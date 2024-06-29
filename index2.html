@@ -434,7 +434,7 @@ function updateImageDisplay() {
       var listItem = document.createElement("li");
       var para = document.createElement("p");
       if (validFileType(curFiles[i])) {
-        para.textContent = "تم اختيار : " + curFiles[i].name;
+        para.textContent = "" + curFiles[i].name;
         var image = document.createElement("img");
         image.src = window.URL.createObjectURL(curFiles[i]);
 
@@ -445,6 +445,7 @@ function updateImageDisplay() {
         listItem.appendChild(para);
       }
 
+       listItem.appendChild(image); // إضافة الصورة فقط بدون عرض اسم الملف
       list.appendChild(listItem);
     }
   }
