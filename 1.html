@@ -357,56 +357,28 @@
     </div>
    
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const menuIcon = document.getElementById('menu-icon');
-            const closeIcon = document.getElementById('close-icon');
-            const sidebar = document.querySelector('.sidebar');
+     document.addEventListener('DOMContentLoaded', () => {
+    fetch('https://hindgeto.github.io/tahakoma/data.json')
+        .then(response => response.json())
+        .then(data => {
+            const ads = data.values; // تفترض أن 'values' يحتوي على البيانات بالشكل المناسب
 
-            document.querySelector('.menu-toggle').addEventListener('click', function() {
-                document.querySelector('.sidebar').classList.toggle('show');
-            });
+            // البحث عن الإعلانات التي تحتوي على القيمة "Yes" فقط
+            const adsToShow = ads.filter(ad => ad[0] === 'Yes');
 
-            document.querySelector('.close-btn').addEventListener('click', function() {
-                document.querySelector('.sidebar').classList.remove('show');
-            });
-
-            // استرجاع البيانات من ملف data.json وعرض الإعلان المناسب
-            fetch('https://hindgeto.github.io/tahakoma/data.json')
-                .then(response => response.json())
-                .then(data => {
-                    const ads = data.values; // تفترض أن 'values' يحتوي على البيانات بالشكل المناسب
-
-                    // البحث عن الإعلان المناسب للعرض
-                    for (let i = 0; i < ads.length; i++) {
-                        if (ads[i][0] === 'Yes') {
-                            // عرض الإعلان
-                            const adHTML = ads[i][1]; // تفترض أن الفهرس 1 يحتوي على الكود الHTML للإعلان
-                            document.querySelector('.column.secondary').innerHTML = adHTML;
-                            break; // توقف البحث بمجرد العثور على الإعلان المناسب
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                });
+            if (adsToShow.length > 0) {
+                const adHTML = adsToShow[0][1]; // تفترض أن الفهرس 1 يحتوي على الكود الHTML للإعلان
+                document.querySelector('.column.secondary').innerHTML = adHTML;
+            } else {
+                // في حالة عدم وجود إعلانات متوافقة
+                document.querySelector('.column.secondary').innerHTML = '<p>لا يوجد إعلانات متاحة حالياً.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
         });
+});
 
-        // توابع إضافية لإدارة النموذج وعرض الصورة المحدثة
-        function updateImageDisplay() {
-            // تحديث عرض الصورة
-        }
-
-        function submitAndClearForm() {
-            // إرسال النموذج وعرض رسالة المعالجة والنجاح
-        }
-
-        function resetForm() {
-            // إعادة تعيين النموذج
-        }
-
-        function goHome() {
-            // الانتقال إلى الصفحة الرئيسية
-        }
     </script>
 </body>
 </html>
