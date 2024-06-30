@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة الإعلانات</title>
+<style>
+  .ad-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .ad-card {
+    position: relative;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: #f9f9f9;
+  }
+
+  .ad-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .ad-card .text-content {
+    padding: 10px;
+    text-align: center;
+  }
+
+  .ad-card .title {
+    font-size: 18px;
+    margin-bottom: 5px;
+  }
+
+  .ad-card .subtitle {
+    font-size: 14px;
+    color: #666;
+  }
+
+  .control-buttons {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+  }
+
+  .toggle-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 70px;
+    height: 25px;
+    padding: 5px;
+    background-color: #ccc;
+    border: 1px solid #aaa;
+    border-radius: 15px;
+    cursor: pointer;
+  }
+
+  .toggle-button .indicator {
+    width: 18px;
+    height: 18px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+  }
+
+  .toggle-button.active {
+    background-color: green;
+  }
+
+  .toggle-button.active .indicator {
+    transform: translateX(30px);
+  }
+
+  .toggle-button span {
+    font-size: 10px;
+    color: white;
+    margin-left: 5px;
+  }
+
+  .edit-button {
+    padding: 3px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    background-color: orange;
+    color: white;
+  }
+
+  .edit-form-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .edit-form {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .edit-form label {
+    font-size: 14px;
+  }
+
+  .edit-form input {
+    padding: 5px;
+    font-size: 14px;
+  }
+
+  .edit-form button {
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: orange;
+    color: white;
+  }
+</style>
+</head>
+<body>
+
+<div id="ad-container" class="ad-grid-container"></div>
+
+<!-- Form for editing ads -->
+<div id="edit-form-container" class="edit-form-container" style="display:none;">
+  <div class="edit-form">
+    <label for="edit-title">العنوان</label>
+    <input type="text" id="edit-title">
+    
+    <label for="edit-subtitle">العنوان الفرعي</label>
+    <input type="text" id="edit-subtitle">
+    
+    <label>معاينة الصورة</label>
+    <div id="edit-image-preview"></div>
+    <input type="file" id="image-upload" style="display:none;">
+    <button id="update-image-button">تحديث الصورة</button>
+    
+    <button id="submit-updates-button">إرسال التحديث</button>
+  </div>
+</div>
+
+<script>
+  const adContainer = document.getElementById('ad-container');
+  const editFormContainer = document.getElementById('edit-form-container');
+  const editTitleInput = document.getElementById('edit-title');
+  const editSubtitleInput = document.getElementById('edit-subtitle');
+  const editImagePreview = document.getElementById('edit-image-preview');
+  const imageUploadInput = document.getElementById('image-upload');
+  const updateImageButton = document.getElementById('update-image-button');
+  const submitUpdatesButton = document.getElementById('submit-updates-button');
+  const dataUrl = 'https://sheets.googleapis.com/v4/spreadsheets/1cV6g2RRwlKxwRbC-yuzZyzBndCEKNFnuTE63KvzfvxQ/values/ads!A1:J100?key=AIzaSyBhiqVypmyLHYPmqZYtvdSvxEopcLZBdYU';
+  const scriptUrl = 'https://script.google.com/macros/s/AKfycbx2xJ1OxemLiN5hh9N9DuKThLqOqX9s6eUlARwbApsAfvO2dAiyIy0teshLu3oabZNmBA/exec';
+
+  let ads = [];
+  let currentAdIndex = null;
+  let updatedImage = null;
+
+  fetch(dataUrl)
+    .then(response => response.json())
+    .then(data => {
+      const rows = data.values;
+      ads = rows.slice(1).map(row => ({
+        name: row[0],
+        imageUrl: row[1],
+        title: row[2],
+        subtitle: row[3],
+        status: row[4]
+      }));
+      renderAds();
+    })
+    .catch(error => console.error(error));
+
+  function renderAds() {
+    adContainer.innerHTML = '';
+
+    ads.forEach((ad, index) => {
+      const adCard = document.createElement('div');
+      adCard.classList.add('ad-card');
+
+      const imageContainer = document.createElement('div');
+      imageContainer.classList.add('image-container');
+
+      const image = document.createElement('img');
+      image.src = ad.imageUrl;
+      image.alt = 'Advertisement Image';
+
+      const textContent = document.createElement('div');
+      textContent.classList.add('text-content');
+
+      const adName = document.createElement('h2');
+      adName.classList.add('ad-name');
+      adName.textContent = ad.name;
+
+      const title = document.createElement('h3');
+      title.classList.add('title');
+      title.textContent = ad.title;
+
+      const subtitle = document.createElement('p');
+      subtitle.classList.add('subtitle');
+      subtitle.textContent = ad.subtitle;
+
+      textContent.appendChild(adName);
+      textContent.appendChild(title);
+      textContent.appendChild(subtitle);
+
+      const controlButtons = document.createElement('div');
+      controlButtons.classList.add('control-buttons');
+
+      const toggleButton = document.createElement('div');
+      toggleButton.classList.add('toggle-button');
+      toggleButton.innerHTML = `
+        <div class="indicator"></div>
+        <span>${ad.status === 'active' ? 'مشغل' : 'معطل'}</span>
+      `;
+      toggleButton.classList.toggle('active', ad.status === 'active');
+      toggleButton.addEventListener('click', () => toggleStatus(toggleButton, ad.name));
+
+      const editButton = document.createElement('button');
+      editButton.textContent = 'تعديل';
+      editButton.classList.add('edit-button');
+      editButton.addEventListener('click', () => openEditForm(index));
+
+      controlButtons.appendChild(toggleButton);
+      controlButtons.appendChild(editButton);
+
+      adCard.appendChild(image);
+      adCard.appendChild(controlButtons);
+      adCard.appendChild(textContent);
+      adContainer.appendChild(adCard);
+    });
+  }
+
+  function toggleStatus(button, adName) {
+    button.classList.toggle('active');
+    const statusText = button.querySelector('span');
+    const newStatus = button.classList.contains('active') ? 'active' : 'inactive';
+    statusText.textContent = newStatus === 'active' ? 'مشغل' : 'معطل';
+
+    fetch(scriptUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `name=${adName}&status=${newStatus}`
+    });
+  }
+
+  function openEditForm(index) {
+    currentAdIndex = index;
+    const ad = ads[index];
+    editTitleInput.value = ad.title;
+    editSubtitleInput.value = ad.subtitle;
+    editImagePreview.innerHTML = `<img src="${ad.imageUrl}" alt="Image Preview" style="width: 100%; height: auto;">`;
+    editFormContainer.style.display = 'flex';
+  }
+
+  updateImageButton.addEventListener('click', () => {
+    imageUploadInput.click();
+  });
+
+  imageUploadInput.addEventListener('change', event => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        updatedImage = e.target.result;
+        editImagePreview.innerHTML = `<img src="${updatedImage}" alt="Image Preview" style="width: 100%; height: auto;">`;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  submitUpdatesButton.addEventListener('click', () => {
+    const updatedAd = {
+      name: ads[currentAdIndex].name,
+      title: editTitleInput.value,
+      subtitle: editSubtitleInput.value,
+      imageUrl: updatedImage || ads[currentAdIndex].imageUrl
+    };
+
+    fetch(scriptUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `name=${encodeURIComponent(updatedAd.name)}&title=${encodeURIComponent(updatedAd.title)}&subtitle=${encodeURIComponent(updatedAd.subtitle)}&imageUrl=${encodeURIComponent(updatedAd.imageUrl)}`
+    })
+      .then(() => {
+        ads[currentAdIndex].title = updatedAd.title;
+        ads[currentAdIndex].subtitle = updatedAd.subtitle;
+        ads[currentAdIndex].imageUrl = updatedAd.imageUrl;
+        renderAds();
+        editFormContainer.style.display = 'none';
+      })
+      .catch(error => console.error(error));
+  });
+</script>
+</body>
+</html>
