@@ -484,6 +484,7 @@ function submitAndClearForm() {
     document.getElementById('filename').value = file.name;
 
     submitButton.disabled = true;
+    document.querySelector('.navbar').scrollIntoView({ behavior: 'smooth' });
     loadingImage.style.display = 'block';
     processingMessage.style.display = 'block';
     uploadForm.style.display = 'none';
