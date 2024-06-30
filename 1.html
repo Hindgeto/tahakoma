@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@160..700&display=swap" rel="stylesheet">
+    
+    
     <title>لوحة تحكم مراجعة الكتب</title>
    
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Readex Pro', sans-serif;
             margin: 0;
             padding: 0;
             direction: rtl;
@@ -137,7 +143,7 @@
             color: #0056b3;
         }
 
-        @media (max-width: 540px) {
+        @media (max-width: 768px) {
             .menu {
                 display: none;
             }
@@ -177,7 +183,8 @@
             border-radius: 5px;
         }
 
-        .form-btn1 {
+         .button button {
+            font-family: 'Readex Pro', sans-serif;
             background-color: #f2ab19;
             color: #080808;
             border: none;
@@ -188,7 +195,7 @@
             width: 30%;
         }
 
-        .form-btn1 :hover {
+        .button button:hover {
             background-color: #080808;
             color: #f2ab19;
         }
@@ -259,6 +266,7 @@
         }
 
         .success-buttons button {
+            font-family: 'Readex Pro', sans-serif;
             background-color: #f2ab19;
             color: #080808;
             border: none;
@@ -345,7 +353,7 @@
           </div>
         
           <div class="button" style="width: 100%;">
-            <button class="form-btn1" type="button" id="submitButton" onclick="submitAndClearForm();">إرسال</button>
+            <button  type="button" id="submitButton" onclick="submitAndClearForm();">إرسال</button>
           </div>
         </form>
             
@@ -368,10 +376,9 @@
             
             
         </div>
-        
-        
         <div class="column secondary">
-     <div id="ad-container" style="width: 100%; height: 100vh; overflow: hidden;"></div>
+            
+           <div id="ad-container" style="width: 100%; height: 100vh; overflow: hidden;"></div>
 <script>
   const adContainer = document.getElementById('ad-container');
   const dataUrl = 'https://sheets.googleapis.com/v4/spreadsheets/1cV6g2RRwlKxwRbC-yuzZyzBndCEKNFnuTE63KvzfvxQ/values/ads!A1:J100?key=AIzaSyBhiqVypmyLHYPmqZYtvdSvxEopcLZBdYU';
@@ -382,19 +389,19 @@
       const ads = data.values.slice(1); // Skip header row
       const activeAds = ads.filter(ad => ad[4] && ad[4].toLowerCase() === 'yes'); // Filter by "Yes" in status (index 4)
 
-      activeAds.forEach(ad => {
+      activeAds.forEach((ad, index) => {
         const adCard = document.createElement('div');
         adCard.classList.add('ad-card');
 
         const cardContainer = document.createElement('div');
         cardContainer.classList.add('card-container');
-        cardContainer.style.width = '100%'; // تعيين عرض ثابت للمربع
-        cardContainer.style.height = '100%'; // تعيين ارتفاع ثابت للمربع
-        cardContainer.style.overflow = 'hidden'; // إخفاء التدفق الزائد للصورة
+        cardContainer.style.width = '100%';
+        cardContainer.style.height = '100%';
+        cardContainer.style.overflow = 'hidden';
 
         const imageContainer = document.createElement('div');
         imageContainer.classList.add('image-container');
-        imageContainer.style.position = 'relative'; // تعيين الوضع ليكون نسبي للتحكم في تحريك الصورة
+        imageContainer.style.position = 'relative';
 
         const image = document.createElement('img');
         image.src = ad[1];
@@ -403,43 +410,71 @@
         image.style.height = '100%';
         image.style.objectFit = 'cover';
         image.style.filter = 'brightness(70%)';
-        image.style.transition = 'transform 0.5s ease'; // تعيين تأثير الانتقال للصورة
-
+        image.style.transition = 'transform 0.5s ease';
         imageContainer.appendChild(image);
         cardContainer.appendChild(imageContainer);
 
         const textContent = document.createElement('div');
         textContent.classList.add('text-content');
-        textContent.style.position = 'absolute'; // تعيين الوضع ليكون مطلقاً لتحديد موضع النص
+        textContent.style.position = 'absolute';
+        textContent.style.bottom = '10%'; // Position text 10% from the bottom
+        textContent.style.width = '100%'; // Ensure text spans full width
 
         const title = document.createElement('h1');
         title.classList.add('title');
         title.textContent = ad[2];
-        title.style.fontSize = '24px'; // تعيين حجم الخط للعنوان
+        title.style.fontSize = '30px';
+        title.style.color = 'white'; // Initial text color
+        title.style.textAlign = 'center'; // Center align title
+        title.style.transition = 'color 0.3s ease'; // Smooth color transition
 
         const subtitle = document.createElement('h2');
         subtitle.classList.add('subtitle');
         subtitle.textContent = ad[3];
-        subtitle.style.fontSize = '18px'; // تعيين حجم الخط للنص الفرعي
+        subtitle.style.fontSize = '20px';
+        subtitle.style.color = 'white'; // Initial text color
+        subtitle.style.textAlign = 'center'; // Center align subtitle
+        subtitle.style.transition = 'color 0.3s ease'; // Smooth color transition
 
         textContent.appendChild(title);
         textContent.appendChild(subtitle);
-        cardContainer.appendChild(textContent);
+        imageContainer.appendChild(textContent);
 
         adCard.appendChild(cardContainer);
-
         adContainer.appendChild(adCard);
+
+        // Flashing animations
+        setInterval(() => {
+          image.style.transform = 'scale(1.05)'; // Scale up
+          setTimeout(() => {
+            image.style.transform = 'scale(1)'; // Reset to normal size
+          }, 500); // Reset after 0.5 second
+        }, 3000); // Flash every 5 seconds
+
+        setInterval(() => {
+          title.style.color = 'orange'; // Flashing color
+          setTimeout(() => {
+            title.style.color = 'white'; // Reset color
+          }, 1000); // Reset after 1 second
+        }, 3800); // Flash every 6 seconds
+
+        setInterval(() => {
+          subtitle.style.color = 'orange'; // Flashing color
+          setTimeout(() => {
+            subtitle.style.color = 'white'; // Reset color
+          }, 1000); // Reset after 1 second
+        }, 4200); // Flash every 7 seconds
       });
     })
     .catch(error => console.error(error));
 </script>
 
-
-
+ 
+            
             
         </div>
     </div>
-   
+    
     <script>
              document.addEventListener('DOMContentLoaded', () => {
             const menuIcon = document.getElementById('menu-icon');
