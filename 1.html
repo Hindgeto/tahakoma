@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم مراجعة الكتب</title>
+   
+    <style>
+        /* أسلوب التنسيق هنا */
+         body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            background-color: #080808;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;  
+            align-items: center;
+            color: white;
+            padding-left: 10%;
+            padding-right: 10%;
+        }
+
+        .navbar .logo img {
+            width: 50px;
+        }
+
+        .menu {
+            display: flex;
+            gap: 20px;
+        }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 1em;
+        }
+
+        .menu a:hover {
+            color: #f2ab19;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .menu-toggle {
+            display: none;
+            cursor: pointer;
+        }
+
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 20px;
+            gap: 20px;
+        }
+
+        .column {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .column.main {
+            flex: 1 1 60%;
+        }
+
+        .column.secondary {
+            flex: 1 1 30%;
+        }
+
+        .sidebar {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 250px;
+            height: 100vh;
+            background-color: #383434;
+            color: white;
+            padding: 20px;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .sidebar.show {
+            transform: translateX(0);
+        }
+
+        .sidebar .close-btn {
+            text-align: right;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .sidebar .logo {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.8em;
+        }
+
+        .sidebar nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 0;
+            border-radius: 20px 0 0 0;
+            display: block;
+            transition: background-color 0.3s;
+            padding-right: 15px;
+        }
+
+        .sidebar nav a:hover {
+            background-color: #f2ab19;
+            color: #080808;
+        }
+
+        .sidebar-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-footer a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+        }
+
+        .sidebar-footer a:hover {
+            color: #0056b3;
+        }
+
+        @media (max-width: 768px) {
+            .menu {
+                display: none;
+            }
+
+            .menu-toggle {
+                display: block;
+                margin-top: 5px;
+            }
+
+            .main-content {
+                flex-direction: column;
+            }
+
+            .column.main, .column.secondary {
+                flex: 1 1 100%;
+            }
+
+            .sidebar {
+                display: flex;
+                border-radius: 15px 0 0 0;
+            }
+        }
+
+        .form-label {
+            color: #333;
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+
+        .form-input {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-align: right;
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-btn1 {
+            background-color: #f2ab19;
+            color: #080808;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 30%;
+        }
+
+        .form-btn1 :hover {
+            background-color: #080808;
+            color: #f2ab19;
+        }
+        
+        .custom-file-upload {
+            border: 1px solid #f2ab19;
+            color: #f2ab19;
+            background-color: #fff;
+            padding: 10px 20px;
+            border-radius: 14px;
+            cursor: pointer;
+            display: inline-block;
+            text-align: center;
+            margin-bottom: 20px;
+            width: 50%;
+        }
+
+        .custom-file-upload:hover {
+            background-color:#f2ab19;
+            color: #080808;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-image {
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+        }
+
+        #cover {
+            display: none;
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(255, 255, 255, 0.8); 
+            z-index: 999;
+        }
+
+        #cover img {
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+        }
+
+        #processingMessage {
+            display: none; 
+            text-align: center; 
+            padding: 20px;
+        }
+
+        #successMessage {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .success-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .success-buttons button {
+            background-color: #f2ab19;
+            color: #080808;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 30%;
+        }
+
+        .success-buttons button:hover {
+            background-color: #080808;
+            color: #f2ab19;
+        }
+        
+        .preview {
+            color: black;
+            margin: 0px;
+            font-size: 13px;
+        }
+
+        .preview img {
+            max-width: 100%; /* لضمان تناسب الصورة مع عرض النموذج */
+            height: auto; /* لمنع التشويه عند تغيير حجم الصورة */
+        }
+        
+        
+        
+        
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <!-- شريط التنقل -->
+    </div>
+    <div class="sidebar">
+        <!-- الشريط الجانبي -->
+    </div>
+    <div class="main-content">
+        <div class="column main">
+            <h2 id="AddReview" style="text-align:center;color:#f2ab19;">إضافة مراجعة كتاب</h2>
+          
+          <!-- نموذج الإضافة -->
+          <form id="uploadForm" action="https://script.google.com/macros/s/AKfycbyv9rfLmXT0Ry1zKwq9GPh0ZsjcIRCPnGmNwsDlDSITNwBHa6S35wiLKrs-jfxRd2Q/exec" method="POST" style="color: white;margin-left: 5%;margin-right: 5%;margin-bottom: 60px;margin-top: 50px;text-align: right;z-index: 10;">
+            <input type="hidden" value="" name="fileContent" id="fileContent">
+            <input type="hidden" value="" name="filename" id="filename">
+            <div class="input-box">
+                <label for="nama" class="form-label">عنوان الكتاب</label>
+                <input type="text" id="nama" name="عنوان_الكتاب" class="form-input" placeholder="ادخلي عنوان الكتاب او الرواية" required>
+            </div>
+          
+            <div class="input-box">
+                <label for="file" class="form-label">صورة الغلاف</label>
+                <br>
+                <br>
+                <label for="image_uploads" class="custom-file-upload">
+                    اختر صورة الغلاف
+                </label>
+                <input type="file" id="image_uploads" name="image_uploads" accept=".jpg, .jpeg, .png" onchange="updateImageDisplay();" style="display: none;" required />
+                <div class="preview">
+                    <p style="color: black;margin: 0px;font-size: 13px;">الصورة يجب أن تكون بصيغة PNG أو JPG</p>
+                </div>
+            </div>
+        
+            <div class="button" style="width: 100%;">
+                <button class="form-btn1" type="button" id="submitButton" onclick="submitAndClearForm();">إرسال</button>
+            </div>
+          </form>
+            
+            <!-- عنصر الشاشة التحميل -->
+            <div id="loadingImage" style="display: none; text-align: center;">
+                <img src="https://i.gifer.com/ZZ5H.gif" class="loading-image" alt="Loading...">
+            </div>
+            
+            <!-- عنصر رسالة المعالجة -->
+            <div id="processingMessage" style="display: none; text-align: center;">
+                <h3 style="color: #f2ab19;">جاري المعالجة...</h3>
+            </div>
+            
+            <!-- عنصر رسالة النجاح -->
+            <div id="successMessage" style="display: none; text-align: center;">
+                <h3 style="color: #f2ab19;">تم إرسال المراجعة بنجاح!</h3>
+                <div class="success-buttons">
+                    <button onclick="resetForm()">مراجعة جديدة</button>
+                    <button onclick="goHome()">الرئيسية</button>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- العمود الثانوي لعرض الإعلانات -->
+        <div class="column secondary">
+            <!-- هنا سيتم عرض الإعلان -->
+        </div>
+    </div>
+   
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuIcon = document.getElementById('menu-icon');
+            const closeIcon = document.getElementById('close-icon');
+            const sidebar = document.querySelector('.sidebar');
+
+            document.querySelector('.menu-toggle').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.toggle('show');
+            });
+
+            document.querySelector('.close-btn').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.remove('show');
+            });
+
+            // استرجاع البيانات من ملف data.json وعرض الإعلان المناسب
+            fetch('https://hindgeto.github.io/tahakoma/data.json')
+                .then(response => response.json())
+                .then(data => {
+                    const ads = data.values; // تفترض أن 'values' يحتوي على البيانات بالشكل المناسب
+
+                    // البحث عن الإعلان المناسب للعرض
+                    for (let i = 0; i < ads.length; i++) {
+                        if (ads[i][0] === 'Yes') {
+                            // عرض الإعلان
+                            const adHTML = ads[i][1]; // تفترض أن الفهرس 1 يحتوي على الكود الHTML للإعلان
+                            document.querySelector('.column.secondary').innerHTML = adHTML;
+                            break; // توقف البحث بمجرد العثور على الإعلان المناسب
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        });
+
+        // توابع إضافية لإدارة النموذج وعرض الصورة المحدثة
+        function updateImageDisplay() {
+            // تحديث عرض الصورة
+        }
+
+        function submitAndClearForm() {
+            // إرسال النموذج وعرض رسالة المعالجة والنجاح
+        }
+
+        function resetForm() {
+            // إعادة تعيين النموذج
+        }
+
+        function goHome() {
+            // الانتقال إلى الصفحة الرئيسية
+        }
+    </script>
+</body>
+</html>
